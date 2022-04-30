@@ -89,62 +89,16 @@ void init_cache(){
         }
     }
 }
-/*
-    DEBUG_PRINTF("set:%lx tag:%lx ",set,tag);
-    struct cache_line* free = NULL;
-    struct cache_line* victim = NULL;
-    uint8_t found_free = 0; // flag for free
-    uint64_t counter = (uint64_t)-1;
-    //Walk through a set
-    for (struct cache_line* itr = &cache[set*E]; itr<&cache[set*E+E]; itr++){
-        // DEBUG_PRINTF("itr: %p\n",itr);
-        // itr->tag = tag;
-        if(!found_free && !itr->valid){
-            found_free = 1;
-            free = itr;
-        }
-        if(itr->valid && tag == itr->tag){
-            // hit
-            itr->counter = now;
-            DEBUG_PRINTF("hit ");
-            hits++;
-            if(op == (READ|WRITE)){
-                hits++;
-            } 
-            return;
-        }
-        if(itr->valid && itr->counter < counter){
-            counter = itr->counter;
-            victim = itr;
-        }
-    }
-    DEBUG_PRINTF("miss ");
-    misses++;
-    //Find if hit. 
-    //not hit, find one empty
-    // no empty, evict according to LRU
-    if(found_free){
-        if(op == (READ|WRITE)){
-            DEBUG_PRINTF("hit ");
-            hits++;
-        }
-        free->tag = tag;
-        free->valid = 1;
-        free->counter = now;
-        return;
-    }
-    else{
-        DEBUG_PRINTF("evictions ");
-        evictions++;
-        if(op == (READ|WRITE)){
-            DEBUG_PRINTF("hit ");
-            hits++;
-        }
-        victim->counter = now;
-        victim->tag = tag;
-    }
-*/
 
+void fini_cache(){
+    for (int i=0;i<S;i++){
+        for (int j=0;j<E;j++){
+            struct cache_line *victim = cache[i];
+            DELETE_THIS(&cache[i],victim);
+            free(victim);
+        }
+    }
+}
 
 void perform(int op, uint64_t addr){
     //get tag, set. 
@@ -233,6 +187,8 @@ int main(int argc, char * const argv[]){
     init_cache();
     simulate(hits, misses, evictions);
     printSummary(hits, misses, evictions);
+    fini_cache();
+    free(cache);
     return 0;
 }
 
